@@ -7,7 +7,7 @@ interface InventoryViewProps {
   setMenuItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
 }
 
-const CATEGORIES = ['Entradas', 'Fuertes', 'Vinos', 'Postres', 'Café'];
+const CATEGORIES = ['Entradas', 'Cafés', 'Bebidas', 'Fuertes', 'Postres'];
 
 export default function InventoryView({ menuItems, setMenuItems }: InventoryViewProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -36,7 +36,7 @@ export default function InventoryView({ menuItems, setMenuItems }: InventoryView
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pl-24">
+    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       <header className="p-6 border-b border-stone-800 flex justify-between items-end">
         <div>
           <h1 className="text-[9px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-2">ADMINISTRACIÓN DE CARTA</h1>

@@ -15,49 +15,96 @@ const formatCOP = new Intl.NumberFormat('es-CO', {
 });
 
 export default function HistoryView({ historial, userRole }: HistoryViewProps) {
-  const [filter, setFilter] = useState<'HOY' | 'AYER'>('HOY');
+  const [dateSearch, setDateSearch] = useState(new Date().toISOString().split('T')[0]);
+  const [filterType, setFilterType] = useState<'HOY' | '7DIAS' | 'FECHA'>('HOY');
   const [search, setSearch] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-  const filteredHistorial = historial.filter(inv => 
-    inv.id.includes(search.toUpperCase()) || 
+  const getFilteredByDate = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    if (filterType === 'HOY') {
+      return historial.filter(inv => inv.fecha_ISO === today);
+    }
+    if (filterType === '7DIAS') {
+      return historial.filter(inv => inv.fecha_ISO && inv.fecha_ISO >= sevenDaysAgo);
+    }
+    if (filterType === 'FECHA') {
+      return historial.filter(inv => inv.fecha_ISO === dateSearch);
+    }
+    return historial;
+  };
+
+  const filteredHistorial = getFilteredByDate().filter(inv => 
+    inv.id.toLowerCase().includes(search.toLowerCase()) || 
     inv.mesa_numero.toString().includes(search)
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pl-24">
+    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       {/* Header */}
-      <header className="p-6 border-b border-stone-800 flex justify-between items-end">
+      <header className="p-6 lg:p-12 border-b border-stone-800 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
         <div>
-          <h1 className="text-[9px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-2">BITÁCORA DE OPERACIONES</h1>
-          <h2 className="text-2xl font-semibold tracking-tight uppercase">HISTORIAL DE FACTURAS</h2>
+          <h1 className="text-[10px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-3">BITÁCORA DE OPERACIONES</h1>
+          <h2 className="text-2xl lg:text-4xl font-semibold tracking-tight uppercase">HISTORIAL DE FACTURAS</h2>
         </div>
         
-        <div className="flex gap-4">
-          <div className="flex border border-stone-800 rounded-none overflow-hidden">
-            <button 
-              onClick={() => setFilter('HOY')}
-              className={`px-6 py-2 text-[9px] font-bold tracking-[0.3em] uppercase transition-all duration-300 ${filter === 'HOY' ? 'bg-brand-gold text-brand-bg' : 'text-stone-600 hover:text-white'}`}
-            >
-              HOY
-            </button>
-            <button 
-              onClick={() => setFilter('AYER')}
-              className={`px-6 py-2 text-[9px] font-bold tracking-[0.3em] uppercase transition-all duration-300 ${filter === 'AYER' ? 'bg-brand-gold text-brand-bg' : 'text-stone-600 hover:text-white'}`}
-            >
-              AYER
-            </button>
+        <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end w-full lg:w-auto">
+          {/* Main Selectors */}
+          <div className="flex flex-col gap-3">
+             <label className="text-[8px] font-bold tracking-[0.2em] text-stone-700 uppercase">FILTRAR POR RANGO</label>
+             <div className="flex border border-stone-800 rounded-none overflow-hidden h-12">
+               <button 
+                 onClick={() => setFilterType('HOY')}
+                 className={`px-6 text-[9px] font-bold tracking-[0.3em] uppercase transition-all duration-300 ${filterType === 'HOY' ? 'bg-brand-gold text-brand-bg' : 'text-stone-600 hover:text-white'}`}
+               >
+                 HOY
+               </button>
+               <button 
+                 onClick={() => setFilterType('7DIAS')}
+                 className={`px-6 text-[9px] font-bold tracking-[0.3em] uppercase transition-all duration-300 ${filterType === '7DIAS' ? 'bg-brand-gold text-brand-bg' : 'text-stone-600 hover:text-white border-l border-stone-800'}`}
+               >
+                 7 DÍAS
+               </button>
+               <button 
+                 onClick={() => setFilterType('FECHA')}
+                 className={`px-6 text-[9px] font-bold tracking-[0.3em] uppercase transition-all duration-300 ${filterType === 'FECHA' ? 'bg-brand-gold text-brand-bg' : 'text-stone-600 hover:text-white border-l border-stone-800'}`}
+               >
+                 POR FECHA
+               </button>
+             </div>
           </div>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-700" size={12} />
-            <input 
-              type="text" 
-              placeholder="BUSCAR..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-stone-900/30 border border-stone-800 pl-10 pr-4 py-2 text-[9px] font-bold tracking-[0.2em] uppercase text-white placeholder:text-stone-800 focus:outline-none focus:border-brand-gold w-56 rounded-none transition-all"
-            />
+
+          {/* Specific Date Picker (Conditional) */}
+          {filterType === 'FECHA' && (
+            <div className="flex flex-col gap-3 animate-in slide-in-from-left duration-300">
+               <label className="text-[8px] font-bold tracking-[0.2em] text-stone-700 uppercase">SELECCIONAR DÍA</label>
+               <div className="relative">
+                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600" size={14} />
+                 <input 
+                   type="date" 
+                   value={dateSearch}
+                   onChange={(e) => setDateSearch(e.target.value)}
+                   className="bg-stone-900 border border-stone-800 pl-12 pr-6 h-12 text-[10px] font-bold uppercase text-white focus:outline-none focus:border-brand-gold transition-all"
+                 />
+               </div>
+            </div>
+          )}
+
+          {/* Search Box */}
+          <div className="flex flex-col gap-3 w-full lg:w-64">
+            <label className="text-[8px] font-bold tracking-[0.2em] text-stone-700 uppercase">BÚSQUEDA RÁPIDA</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-700" size={14} />
+              <input 
+                type="text" 
+                placeholder="ID FACTURA / MESA..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="bg-stone-900 border border-stone-800 pl-12 pr-6 h-12 text-[10px] font-medium tracking-[0.1em] text-white placeholder:text-stone-800 focus:outline-none focus:border-brand-gold w-full transition-all"
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -66,8 +113,9 @@ export default function HistoryView({ historial, userRole }: HistoryViewProps) {
       <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
         <div className="max-w-5xl mx-auto">
           {/* Table Header */}
-          <div className="grid grid-cols-[1fr_0.8fr_0.8fr_1.2fr_1fr_0.8fr] gap-6 pb-4 border-b border-stone-800 mb-6">
+          <div className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr_1.2fr_1fr_0.8fr] gap-6 pb-4 border-b border-stone-800 mb-6">
             <span className="text-[9px] font-bold tracking-[0.4em] text-stone-700 uppercase"># ID</span>
+            <span className="text-[9px] font-bold tracking-[0.4em] text-stone-700 uppercase">FECHA</span>
             <span className="text-[9px] font-bold tracking-[0.4em] text-stone-700 uppercase">MESA</span>
             <span className="text-[9px] font-bold tracking-[0.4em] text-stone-700 uppercase">HORA</span>
             <span className="text-[9px] font-bold tracking-[0.4em] text-stone-700 uppercase">TOTAL</span>
@@ -86,9 +134,12 @@ export default function HistoryView({ historial, userRole }: HistoryViewProps) {
             ) : (
               filteredHistorial.map((invoice) => (
                 <div key={invoice.id} className="group hover:bg-stone-900/10 transition-all border-b border-dotted border-stone-800/30">
-                  <div className="grid grid-cols-[1fr_0.8fr_0.8fr_1.2fr_1fr_0.8fr] gap-6 items-center py-4">
+                  <div className="grid grid-cols-[1fr_0.8fr_0.8fr_0.8fr_1.2fr_1fr_0.8fr] gap-6 items-center py-4">
                     <span className="text-xs font-semibold tracking-widest uppercase text-brand-gold">
                       {invoice.id}
+                    </span>
+                    <span className="text-[10px] font-light text-stone-500 font-mono">
+                      {invoice.fecha_ISO}
                     </span>
                     <span className="text-xs font-light tracking-widest uppercase text-stone-400">
                       MESA {invoice.mesa_numero}

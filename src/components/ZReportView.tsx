@@ -13,13 +13,15 @@ const formatCOP = new Intl.NumberFormat('es-CO', {
 });
 
 export default function ZReportView({ historial, onClearHistory }: ZReportViewProps) {
-  const totalSubtotal = historial.reduce((acc, inv) => acc + inv.subtotal_COP, 0);
-  const totalTax = historial.reduce((acc, inv) => acc + inv.tax_COP, 0);
-  const totalTips = historial.reduce((acc, inv) => acc + inv.tip_COP, 0);
-  const grandTotal = historial.reduce((acc, inv) => acc + inv.total_COP, 0);
+  const activeInvoices = historial.filter(inv => !inv.id.startsWith('Z-') && inv.estado !== 'ANULADO');
+  const totalSubtotal = activeInvoices.reduce((acc, inv) => acc + inv.subtotal_COP, 0);
+  const totalTax = activeInvoices.reduce((acc, inv) => acc + inv.tax_COP, 0);
+  const totalTips = activeInvoices.reduce((acc, inv) => acc + inv.tip_COP, 0);
+  const grandTotal = activeInvoices.reduce((acc, inv) => acc + inv.total_COP, 0);
+  const transaccionesTotales = activeInvoices.length;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pl-24">
+    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       {/* Header */}
       <header className="p-12 border-b border-stone-800 flex justify-between items-end">
         <div>
@@ -55,7 +57,7 @@ export default function ZReportView({ historial, onClearHistory }: ZReportViewPr
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] font-bold text-stone-600 tracking-[0.3em] uppercase mb-2">TRANSACCIONES</p>
-                  <h3 className="text-xl font-light tracking-tight text-stone-400">{historial.length}</h3>
+                  <h3 className="text-xl font-light tracking-tight text-stone-400">{transaccionesTotales}</h3>
                 </div>
               </div>
 

@@ -32,7 +32,7 @@ export interface OrderItem extends MenuItem {
 
 export type OrderStatus = 'pendiente' | 'enviado' | 'completado';
 
-export type AppView = 'mesas' | 'cocina' | 'facturacion' | 'meseros' | 'historial' | 'cierre' | 'inventario';
+export type AppView = 'mesas' | 'cocina' | 'facturacion' | 'meseros' | 'historial' | 'cierre' | 'inventario' | 'configuracion' | 'reservas';
 
 export type UserRole = 'admin' | 'mesero';
 
@@ -54,6 +54,7 @@ export interface StaffMember {
   id: string;
   nombre: string;
   rol: string;
+  pin?: string;
 }
 
 export interface Order {
@@ -62,4 +63,15 @@ export interface Order {
   items: OrderItem[];
   total_COP: number;
   estado: OrderStatus;
+}
+
+export interface Reservation {
+  id: string;
+  tableId: string;
+  tableNumero: number;
+  cliente: string;
+  personas: number;
+  fecha: string;
+  hora: string;
+  status: 'pending' | 'completed' | 'cancelled';
 }

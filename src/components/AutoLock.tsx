@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserRole } from '../types';
+import { UserRole, StaffMember } from '../types';
 import AuthScreen from './AuthScreen';
 import { AnimatePresence } from 'motion/react';
 
@@ -9,6 +9,8 @@ interface AutoLockProps {
   userRole: UserRole;
   onReAuthenticate: (role: UserRole) => void;
   lockTimeSeconds?: number;
+  staff?: StaffMember[];
+  adminPin: string;
 }
 
 export default function AutoLock({ 
@@ -16,7 +18,9 @@ export default function AutoLock({
   isAuthenticated, 
   userRole, 
   onReAuthenticate, 
-  lockTimeSeconds = 60 
+  lockTimeSeconds = 120,
+  staff = [],
+  adminPin
 }: AutoLockProps) {
   const [isLocked, setIsLocked] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -64,6 +68,8 @@ export default function AutoLock({
           <AuthScreen 
             onAuthenticated={handleAuthenticated} 
             isLocked={true} 
+            staff={staff}
+            adminPin={adminPin}
           />
         )}
       </AnimatePresence>

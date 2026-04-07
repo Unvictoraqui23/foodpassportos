@@ -17,6 +17,8 @@ const initialState = {
   history: [],
   tips: {},
   pendingCaja: {},
+  menuItems: [],
+  staff: [],
   lastUpdate: 0
 };
 

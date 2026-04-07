@@ -26,7 +26,7 @@ export default function KitchenView({ allOrderItems, onMarkReady }: KitchenViewP
   const ordersArray = Object.values(sentOrders);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pl-24">
+    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       <header className="p-6 border-b border-stone-800 flex justify-between items-end">
         <div>
           <h1 className="text-[9px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-2">MONITOR DE PRODUCCIÓN</h1>

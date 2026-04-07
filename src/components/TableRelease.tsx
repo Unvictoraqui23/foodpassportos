@@ -11,7 +11,7 @@ export default function TableRelease({ tables, onRelease }: TableReleaseProps) {
   const occupiedTables = tables.filter(t => t.estado === 'ocupada' || t.estado === 'lista');
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pl-24">
+    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       <header className="p-12 border-b border-stone-800 flex justify-between items-end">
         <div>
           <h1 className="text-[10px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-3">CIERRE DE OPERACIONES</h1>

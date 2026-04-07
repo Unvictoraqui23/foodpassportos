@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Table, OrderItem, MenuItem, UserRole } from './types';
+import { Table, OrderItem, MenuItem, UserRole, Reservation } from './types';
 import AuthScreen from './components/AuthScreen';
 import AutoLock from './components/AutoLock';
 import TableGrid from './components/TableGrid';
@@ -14,11 +14,12 @@ import MenuItemCard from './components/MenuItemCard';
 import PreInvoiceModal from './components/PreInvoiceModal';
 import SideNav from './components/SideNav';
 import HistoryView from './components/HistoryView';
-import StaffView from './components/StaffView';
 import KitchenView from './components/KitchenView';
 import BillingView from './components/BillingView';
 import InventoryView from './components/InventoryView';
 import ZReportView from './components/ZReportView';
+import SettingsView from './components/SettingsView';
+import ReservationsView from './components/ReservationsView';
 import PrintPreviewModal from './components/PrintPreviewModal';
 import PrinterTemplate from './components/PrinterTemplate';
 import PinAuthModal from './components/PinAuthModal';
@@ -33,19 +34,19 @@ const INITIAL_TABLES: Table[] = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 const INITIAL_STAFF: StaffMember[] = [
-  { id: 's1', nombre: 'CARLOS MENDOZA', rol: 'MESERO SENIOR' },
-  { id: 's2', nombre: 'ANA GARCÍA', rol: 'MESERA' },
-  { id: 's3', nombre: 'LUIS TORRES', rol: 'MESERO' },
+  { id: 's1', nombre: 'CARLOS MENDOZA', rol: 'MESERO SENIOR', pin: '1111' },
+  { id: 's2', nombre: 'ANA GARCÍA', rol: 'MESERA', pin: '2222' },
+  { id: 's3', nombre: 'LUIS TORRES', rol: 'MESERO', pin: '3333' },
 ];
 
-const MENU_CATEGORIES = ['Entradas', 'Fuertes', 'Vinos', 'Postres', 'Café'];
+const MENU_CATEGORIES = ['Entradas', 'Cafés', 'Bebidas', 'Fuertes', 'Postres'];
 
 const MOCK_MENU: MenuItem[] = [
   { id: 'm1', nombre: 'Carpaccio de Res', descripcion: 'Láminas finas de solomillo, alcaparras, parmesano y aceite de trufa.', precio_COP: 42000, categoria: 'Entradas' },
   { id: 'm2', nombre: 'Pulpo a la Brasa', descripcion: 'Tentáculo de pulpo, puré de papa criolla y pimentón de la vera.', precio_COP: 58000, categoria: 'Entradas' },
   { id: 'm3', nombre: 'Risotto de Hongos', descripcion: 'Arroz arborio, variedad de setas silvestres y aceite de trufa blanca.', precio_COP: 65000, categoria: 'Fuertes' },
   { id: 'm4', nombre: 'Salmón en Costra', descripcion: 'Filete de salmón con costra de pistacho y espárragos trigueros.', precio_COP: 72000, categoria: 'Fuertes' },
-  { id: 'm5', nombre: 'Malbec Reserva', descripcion: 'Copa de vino tinto con notas de frutos rojos y roble.', precio_COP: 35000, categoria: 'Vinos' },
+  { id: 'm5', nombre: 'Malbec Reserva', descripcion: 'Copa de vino tinto con notas de frutos rojos y roble.', precio_COP: 35000, categoria: 'Bebidas' },
 ];
 
 function genLineId(): string {
@@ -86,7 +87,10 @@ export default function App() {
     if (!saved) return [];
     return migrateOrderLineIds(JSON.parse(saved) as OrderItem[]);
   });
-  const [staff, setStaff] = useState<StaffMember[]>(INITIAL_STAFF);
+  const [staff, setStaff] = useState<StaffMember[]>(() => {
+    const saved = localStorage.getItem('pos_staff');
+    return saved ? JSON.parse(saved) : INITIAL_STAFF;
+  });
   const [historial, setHistorial] = useState<Invoice[]>(() => {
     const saved = localStorage.getItem('pos_history');
     return saved ? JSON.parse(saved) : [];
@@ -110,7 +114,14 @@ export default function App() {
   const [printFormat, setPrintFormat] = useState<'A4' | '80mm'>('A4');
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isAuthZModalOpen, setIsAuthZModalOpen] = useState(false);
+  const [isCancelAuthOpen, setIsCancelAuthOpen] = useState(false);
+  const [cancelTableId, setCancelTableId] = useState<string | null>(null);
+  const [adminPin, setAdminPin] = useState(() => localStorage.getItem('pos_admin_pin') || '1234');
   const [lastServerUpdate, setLastServerUpdate] = useState(0);
+  const [reservations, setReservations] = useState<Reservation[]>(() => {
+    const saved = localStorage.getItem('pos_reservations');
+    return saved ? JSON.parse(saved) : [];
+  });
   // Refs para evitar closures stale en los efectos de sync
   const lastServerUpdateRef = useRef(0);
   const tablesRef = useRef(tables);
@@ -118,6 +129,10 @@ export default function App() {
   const historialRef = useRef(historial);
   const tableTipsRef = useRef(tableTips);
   const pendingCajaRef = useRef(pendingCaja);
+  const menuItemsRef = useRef(menuItems);
+  const staffRef = useRef(staff);
+  const adminPinRef = useRef(adminPin);
+  const reservationsRef = useRef(reservations);
   const syncUrlRef = useRef(syncUrl);
 
   // Mantener refs sincronizados
@@ -126,6 +141,10 @@ export default function App() {
   React.useEffect(() => { historialRef.current = historial; }, [historial]);
   React.useEffect(() => { tableTipsRef.current = tableTips; }, [tableTips]);
   React.useEffect(() => { pendingCajaRef.current = pendingCaja; }, [pendingCaja]);
+  React.useEffect(() => { menuItemsRef.current = menuItems; }, [menuItems]);
+  React.useEffect(() => { staffRef.current = staff; }, [staff]);
+  React.useEffect(() => { adminPinRef.current = adminPin; }, [adminPin]);
+  React.useEffect(() => { reservationsRef.current = reservations; }, [reservations]);
   React.useEffect(() => { syncUrlRef.current = syncUrl; }, [syncUrl]);
   React.useEffect(() => { lastServerUpdateRef.current = lastServerUpdate; }, [lastServerUpdate]);
 
@@ -146,6 +165,10 @@ export default function App() {
           setHistorial(data.history || []);
           setTableTips(data.tips || {});
           setPendingCaja(data.pendingCaja || {});
+          if (data.menuItems && data.menuItems.length > 0) setMenuItems(data.menuItems);
+          if (data.staff && data.staff.length > 0) setStaff(data.staff);
+          if (data.adminPin) setAdminPin(data.adminPin);
+          if (data.reservations) setReservations(data.reservations);
           setLastServerUpdate(data.lastUpdate);
         } else {
           console.log('[SYNC] Server is empty. Ready for local data.');
@@ -173,6 +196,10 @@ export default function App() {
           history: historialRef.current, 
           tips: tableTipsRef.current, 
           pendingCaja: pendingCajaRef.current,
+          menuItems: menuItemsRef.current,
+          staff: staffRef.current,
+          adminPin: adminPinRef.current,
+          reservations: reservationsRef.current,
           // Enviamos nuestro TS para que el servidor detecte pushes desactualizados
           clientLastUpdate: lastServerUpdateRef.current,
         })
@@ -190,6 +217,10 @@ export default function App() {
           setHistorial(srv.history ?? []);
           setTableTips(srv.tips ?? {});
           setPendingCaja(srv.pendingCaja ?? {});
+          if (srv.menuItems && srv.menuItems.length > 0) setMenuItems(srv.menuItems);
+          if (srv.staff && srv.staff.length > 0) setStaff(srv.staff);
+          if (srv.adminPin) setAdminPin(srv.adminPin);
+          if (srv.reservations) setReservations(srv.reservations);
           setLastServerUpdate(srv.lastUpdate);
           setSyncStatus('online');
         }
@@ -214,6 +245,10 @@ export default function App() {
     localStorage.setItem('pos_history', JSON.stringify(historial));
     localStorage.setItem('pos_tips', JSON.stringify(tableTips));
     localStorage.setItem('pos_pending_caja', JSON.stringify(pendingCaja));
+    localStorage.setItem('pos_menu', JSON.stringify(menuItems));
+    localStorage.setItem('pos_staff', JSON.stringify(staff));
+    localStorage.setItem('pos_admin_pin', adminPin);
+    localStorage.setItem('pos_reservations', JSON.stringify(reservations));
 
     // Debounce Sync Push (800ms para respuesta más rápida)
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
@@ -222,7 +257,7 @@ export default function App() {
     return () => {
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     };
-  }, [tables, allOrderItems, historial, tableTips, pendingCaja, syncUrl, performPush]);
+  }, [tables, allOrderItems, historial, tableTips, pendingCaja, menuItems, staff, adminPin, reservations, syncUrl, performPush]);
 
   // Polling para recibir actualizaciones — usa ref para lastServerUpdate y evita recrear el intervalo
   React.useEffect(() => {
@@ -241,6 +276,9 @@ export default function App() {
           setHistorial(data.history ?? []);
           setTableTips(data.tips ?? {});
           setPendingCaja(data.pendingCaja ?? {});
+          if (data.menuItems && data.menuItems.length > 0) setMenuItems(data.menuItems);
+          if (data.staff && data.staff.length > 0) setStaff(data.staff);
+          if (data.adminPin) setAdminPin(data.adminPin);
           setLastServerUpdate(data.lastUpdate);
           setSyncStatus('online');
         } else if (data) {
@@ -259,8 +297,48 @@ export default function App() {
     setCurrentView('mesas');
   };
 
+  const handleAddReservation = (res: Omit<Reservation, 'id' | 'status'>) => {
+    const newRes: Reservation = {
+      ...res,
+      id: `r${Date.now()}`,
+      status: 'pending'
+    };
+    setReservations(prev => [...prev, newRes]);
+    // Marcar mesa como reservada
+    setTables(prev => prev.map(t => t.id === res.tableId ? { ...t, estado: 'reservada' } : t));
+  };
+
+  const handleUpdateReservationStatus = (id: string, status: Reservation['status']) => {
+    setReservations(prev => prev.map(r => {
+      if (r.id === id) {
+        // Si la reserva se completa o cancela, liberar la mesa (si sigue reservada)
+        if (status === 'completed' || status === 'cancelled') {
+           setTables(ts => ts.map(t => t.id === r.tableId && t.estado === 'reservada' ? { ...t, estado: 'disponible' } : t));
+        }
+        return { ...r, status };
+      }
+      return r;
+    }));
+  };
+
+  const handleRemoveReservation = (id: string) => {
+    const res = reservations.find(r => r.id === id);
+    if (res && res.status === 'pending') {
+       setTables(ts => ts.map(t => t.id === res.tableId && t.estado === 'reservada' ? { ...t, estado: 'disponible' } : t));
+    }
+    setReservations(prev => prev.filter(r => r.id !== id));
+  };
+
   if (!isAuthenticated) {
-    return <AuthScreen onAuthenticated={handleLogin} />;
+    return (
+      <AuthScreen 
+        onAuthenticated={handleLogin} 
+        staff={staff} 
+        syncStatus={syncStatus}
+        onOpenSyncSettings={() => setIsSyncSettingsOpen(true)}
+        adminPin={adminPin}
+      />
+    );
   }
 
   // Derived state for the selected table
@@ -449,15 +527,9 @@ export default function App() {
   };
 
   const handleClearHistory = () => {
-    if (window.confirm('¿ESTÁ SEGURO DE QUE DESEA REALIZAR EL CIERRE? SE ELIMINARÁ EL HISTORIAL DE HOY.')) {
-      console.log('--- GENERANDO REPORTE Z ---');
-      console.log('FECHA:', new Date().toLocaleString());
-      console.log('TRANSACCIONES:', historial.length);
-      console.log('TOTAL:', historial.reduce((acc, inv) => acc + inv.total_COP, 0));
-      console.log('---------------------------');
-      
-      setHistorial([]);
-      alert('CIERRE DE CAJA EXITOSO. EL HISTORIAL HA SIDO REINICIADO.');
+    // Obsolete code (ahora handled por handlePrintZReportDirect)
+    if (window.confirm('¿ESTÁ SEGURO DE QUE DESEA REALIZAR EL CIERRE? SE ELIMINARÁ EL HISTORIAL ACTIVO DE HOY.')) {
+      handlePrintZReportDirect();
     }
   };
 
@@ -505,28 +577,44 @@ export default function App() {
   };
 
   const handlePrintZReportDirect = () => {
-    if (historial.length === 0) {
-      alert('Sin historial para reporte');
+    const dailyInvoices = historial.filter(inv => !inv.id.startsWith('Z-') && inv.estado !== 'ANULADO');
+    if (dailyInvoices.length === 0) {
+      alert('Sin historial de ventas válidas para reporte hoy.');
       return;
     }
-    const totalVentas = historial.reduce((acc, inv) => acc + inv.total_COP, 0);
+    const totalVentas = dailyInvoices.reduce((acc, inv) => acc + inv.total_COP, 0);
+    const totalSub = dailyInvoices.reduce((acc, inv) => acc + inv.subtotal_COP, 0);
+    const totalTax = dailyInvoices.reduce((acc, inv) => acc + inv.tax_COP, 0);
+    const totalTips = dailyInvoices.reduce((acc, inv) => acc + inv.tip_COP, 0);
+
     const zInvoice: Invoice = {
-      id: `Z-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
+      id: `Z-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${Math.floor(Math.random()*1000)}`,
       mesa_numero: 0,
       hora: new Date().toLocaleTimeString(),
       fecha_ISO: new Date().toISOString().split('T')[0],
       items: [
-        { id: 'z1', nombre: 'REPORTE Z ACUMULADO', descripcion: 'Ventas del día', precio_COP: totalVentas, categoria: 'ADMIN', cantidad: 1, status: 'ready', tableId: '0' }
+        { id: 'z1', nombre: 'REPORTE Z ACUMULADO', descripcion: 'Ventas del día', precio_COP: totalVentas, categoria: 'ADMIN', cantidad: 1, status: 'ready', tableId: '0', lineId: 'z1' }
       ],
-      subtotal_COP: totalVentas / 1.08,
-      tax_COP: totalVentas - (totalVentas / 1.08),
-      tip_COP: 0,
+      subtotal_COP: totalSub,
+      tax_COP: totalTax,
+      tip_COP: totalTips,
       tip_percentage: 0,
       total_COP: totalVentas,
       estado: 'PAGADO',
     };
+
+    // Filter out today's valid invoices to clear the active day's sale.
+    // We keep voided invoices and past Z-Reports so the history is preserved.
+    const remainingHistory = historial.filter(inv => inv.id.startsWith('Z-') || inv.estado === 'ANULADO');
+    setHistorial([zInvoice, ...remainingHistory]);
     setPrintQueue(zInvoice);
     setIsPrintModalOpen(true);
+    
+    // push inmediato
+    setTimeout(() => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+      performPush();
+    }, 50);
   };
 
   const handleExecutePrint = (format: 'A4' | '80mm') => {
@@ -542,11 +630,37 @@ export default function App() {
     setCurrentView('historial');
   };
 
+  const handleCancelTableRequest = (tableId: string) => {
+    setCancelTableId(tableId);
+    setIsCancelAuthOpen(true);
+  };
+
+  const handleCancelTableConfirm = () => {
+    if (cancelTableId) {
+      // Clear all order items for this table
+      setAllOrderItems(prev => prev.filter(item => item.tableId !== cancelTableId));
+      // Release table
+      handleReleaseTable(cancelTableId);
+    }
+    setIsCancelAuthOpen(false);
+    setCancelTableId(null);
+  };
+
+  const handleVoidInvoice = (invoiceId: string) => {
+    if (window.confirm('¿ESTÁ SEGURO DE ANULAR ESTA FACTURA? (No sumará en el reporte Z pero quedará en el historial)')) {
+      setHistorial(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, estado: 'ANULADO' } : inv));
+      setTimeout(() => {
+        if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+        performPush();
+      }, 50);
+    }
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'mesas':
         return (
-          <main className="flex-1 flex flex-col overflow-hidden pl-24">
+          <main className="flex-1 flex flex-col overflow-hidden pt-16 md:pt-0 md:pl-24">
             <header className="p-6 lg:p-12 border-b border-stone-800 flex justify-between items-end gap-4 overflow-x-auto no-scrollbar">
               <div className="shrink-0 min-w-max">
                 <h1 className="text-[10px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-3">GESTIÓN DE SALÓN</h1>
@@ -580,6 +694,8 @@ export default function App() {
                   selectedTableId={selectedTable?.id}
                   pendingCajaByTable={pendingCaja}
                   allOrderItems={allOrderItems}
+                  userRole={userRole}
+                  onCancelOrder={handleCancelTableRequest}
                 />
               ) : (
                 <div className="flex flex-col h-full">
@@ -604,8 +720,6 @@ export default function App() {
         );
       case 'historial':
         return userRole === 'admin' ? <HistoryView historial={historial} userRole={userRole} /> : null;
-      case 'meseros':
-        return userRole === 'admin' ? <StaffView staff={staff} setStaff={setStaff} /> : null;
       case 'cocina':
         return <KitchenView allOrderItems={allOrderItems} onMarkReady={handleMarkReady} />;
       case 'facturacion':
@@ -622,12 +736,32 @@ export default function App() {
             onBillingRemoveLine={handleBillingRemoveLine}
             historial={historial}
             onPrintInvoice={handleTriggerPrint}
+            onVoidInvoice={handleVoidInvoice}
           />
         );
       case 'cierre':
         return userRole === 'admin' ? <ZReportView historial={historial} onClearHistory={handlePreAuthZReport} /> : null;
       case 'inventario':
         return userRole === 'admin' ? <InventoryView menuItems={menuItems} setMenuItems={setMenuItems} /> : null;
+      case 'configuracion':
+        return userRole === 'admin' ? (
+          <SettingsView 
+            adminPin={adminPin} 
+            setAdminPin={setAdminPin} 
+            staff={staff} 
+            setStaff={setStaff} 
+          />
+        ) : null;
+      case 'reservas':
+        return (
+          <ReservationsView 
+            tables={tables} 
+            reservations={reservations}
+            onAddReservation={handleAddReservation}
+            onUpdateReservationStatus={handleUpdateReservationStatus}
+            onRemoveReservation={handleRemoveReservation}
+          />
+        );
       default:
         return null;
     }
@@ -639,12 +773,16 @@ export default function App() {
       userRole={userRole} 
       onReAuthenticate={handleLogin}
       lockTimeSeconds={60}
+      staff={staff}
+      adminPin={adminPin}
     >
       <div className="flex h-screen bg-brand-bg overflow-hidden font-sans text-white">
         <SideNav 
           currentView={currentView} 
           onViewChange={setCurrentView} 
           userRole={userRole}
+          syncStatus={syncStatus}
+          onOpenSyncSettings={() => setIsSyncSettingsOpen(true)}
         />
 
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
@@ -682,6 +820,7 @@ export default function App() {
                   onSendToCashRegister={handleSendToCashRegister}
                   pendingCaja={!!pendingCaja[selectedTable.id]}
                   userRole={userRole}
+                  onCancelOrder={handleCancelTableRequest}
                 />
               </div>
             </aside>
@@ -734,8 +873,16 @@ export default function App() {
           isOpen={isAuthZModalOpen}
           onClose={() => setIsAuthZModalOpen(false)}
           onAuthenticated={handlePrintZReportDirect}
-          requiredPin="1234"
+          requiredPin={adminPin}
           title="AUTORIZAR REPORTE Z"
+        />
+
+        <PinAuthModal 
+          isOpen={isCancelAuthOpen}
+          onClose={() => setIsCancelAuthOpen(false)}
+          onAuthenticated={handleCancelTableConfirm}
+          requiredPin={adminPin}
+          title="CANCELAR ORDEN / MESA"
         />
 
         {isSyncSettingsOpen && (
@@ -783,18 +930,6 @@ export default function App() {
          </div>
         )}
 
-        {/* Sync Status Overlay/Bubble */}
-        <div 
-          onClick={() => setIsSyncSettingsOpen(true)}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] cursor-pointer group flex items-center gap-3 bg-black/40 backdrop-blur-md border border-stone-800 p-2 lg:p-3 hover:border-brand-gold transition-all duration-500 rounded-none overflow-hidden"
-        >
-          <div className={`w-2 h-2 rounded-full animate-pulse ${
-            syncStatus === 'online' ? 'bg-emerald-500' : syncStatus === 'error' ? 'bg-red-500' : 'bg-amber-500'
-          }`} />
-          <span className="text-[8px] font-bold tracking-[0.4em] text-stone-500 group-hover:text-white uppercase transition-colors hidden lg:block">
-            {syncStatus === 'online' ? 'RED: ONLINE' : syncStatus === 'error' ? 'RED: ERROR' : 'RED: CONECTANDO...'}
-          </span>
-        </div>
         
         <div id="printable-area" className="fixed opacity-0 pointer-events-none -z-50 invisible print:visible print:opacity-100 print:fixed print:inset-0 print:bg-white print:text-black print:z-[200]">
           <PrinterTemplate 

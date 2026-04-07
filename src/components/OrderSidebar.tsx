@@ -15,6 +15,7 @@ interface OrderSidebarProps {
   onSendToCashRegister?: () => void;
   pendingCaja?: boolean;
   userRole: UserRole;
+  onCancelOrder?: (tableId: string) => void;
 }
 
 const formatCOP = new Intl.NumberFormat('es-CO', {
@@ -35,7 +36,8 @@ export default function OrderSidebar({
   onViewHistory,
   onSendToCashRegister,
   pendingCaja = false,
-  userRole
+  userRole,
+  onCancelOrder
 }: OrderSidebarProps) {
   const isMesero = userRole === 'mesero';
 
@@ -242,6 +244,12 @@ export default function OrderSidebar({
                       className="w-full py-3 border border-stone-800 text-stone-500 font-bold text-[8px] tracking-[0.3em] uppercase hover:text-white hover:border-stone-600 transition-all rounded-none"
                     >
                       IMPRIMIR PRE-FACTURA
+                    </button>
+                    <button
+                      onClick={() => onCancelOrder?.(selectedTable?.id || '')}
+                      className="w-full py-3 border border-red-900/30 text-red-700 font-bold text-[8px] tracking-[0.3em] uppercase hover:text-red-500 hover:border-red-600 transition-all rounded-none"
+                    >
+                      CANCELAR ORDEN / MESA
                     </button>
                     <button
                       onClick={onFinalize}

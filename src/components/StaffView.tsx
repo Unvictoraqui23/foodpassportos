@@ -14,10 +14,12 @@ export default function StaffView({ staff, setStaff }: StaffViewProps) {
     const nombre = prompt('NOMBRE DEL NUEVO MESERO:');
     if (nombre) {
       const rol = prompt('ROL (MESERO, CAPITÁN, ETC):') || 'MESERO';
+      const pin = prompt('PIN DE 4 DÍGITOS PARA ESTE USUARIO:') || '0000';
       const newMember: StaffMember = {
         id: `s${Date.now()}`,
         nombre: nombre.toUpperCase(),
         rol: rol.toUpperCase(),
+        pin: pin.slice(0, 4)
       };
       setStaff(prev => [...prev, newMember]);
     }
@@ -30,7 +32,8 @@ export default function StaffView({ staff, setStaff }: StaffViewProps) {
     const nuevoNombre = prompt('EDITAR NOMBRE:', member.nombre);
     if (nuevoNombre) {
       const nuevoRol = prompt('EDITAR ROL:', member.rol) || member.rol;
-      setStaff(prev => prev.map(s => s.id === id ? { ...s, nombre: nuevoNombre.toUpperCase(), rol: nuevoRol.toUpperCase() } : s));
+      const nuevoPin = prompt('EDITAR PIN DE 4 DÍGITOS:', member.pin || '0000') || '0000';
+      setStaff(prev => prev.map(s => s.id === id ? { ...s, nombre: nuevoNombre.toUpperCase(), rol: nuevoRol.toUpperCase(), pin: nuevoPin.slice(0, 4) } : s));
     }
     setSelectedStaff(null);
   };
@@ -43,7 +46,7 @@ export default function StaffView({ staff, setStaff }: StaffViewProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pl-24">
+    <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       {/* Header */}
       <header className="p-6 border-b border-stone-800 flex justify-between items-end">
         <div>
@@ -77,7 +80,9 @@ export default function StaffView({ staff, setStaff }: StaffViewProps) {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold tracking-widest uppercase mb-0.5">{member.nombre}</h3>
-                  <p className="text-[9px] font-light tracking-[0.4em] text-stone-600 uppercase">{member.rol}</p>
+                  <p className="text-[9px] font-light tracking-[0.4em] text-stone-600 uppercase">
+                    {member.rol} • PIN: {member.pin || 'NO CONFIGURADO'}
+                  </p>
                 </div>
               </div>
 

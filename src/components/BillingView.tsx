@@ -14,6 +14,7 @@ interface BillingViewProps {
   onBillingRemoveLine?: (lineId: string) => void;
   historial: Invoice[];
   onPrintInvoice: (invoice: Invoice) => void;
+  onVoidInvoice?: (invoiceId: string) => void;
 }
 
 const formatCOP = new Intl.NumberFormat('es-CO', {
@@ -40,7 +41,8 @@ export default function BillingView({
   onBillingLineQuantityDelta,
   onBillingRemoveLine,
   historial,
-  onPrintInvoice
+  onPrintInvoice,
+  onVoidInvoice
 }: BillingViewProps) {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
@@ -107,8 +109,8 @@ export default function BillingView({
     userRole === 'admin' && onBillingLineQuantityDelta && onBillingRemoveLine;
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-brand-bg pl-24">
-      <div className="w-1/4 border-r border-stone-800 flex flex-col">
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
+      <div className="w-full h-1/3 lg:h-auto lg:w-1/4 border-b lg:border-b-0 lg:border-r border-stone-800 flex flex-col shrink-0">
         <header className="p-6 border-b border-stone-800 space-y-6">
           <div>
             <h1 className="text-[9px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-2">{headerSubtitle}</h1>
@@ -199,14 +201,17 @@ export default function BillingView({
                     setSelectedInvoiceId(inv.id);
                     setSelectedTableId(null);
                   }}
-                  className={`w-full p-4 border transition-all duration-300 flex justify-between items-center rounded-none animate-in fade-in slide-in-from-left-2 duration-300 ${selectedInvoiceId === inv.id ? 'border-brand-gold bg-stone-900/40' : 'border-stone-900 hover:border-stone-700'}`}
+                  className={`w-full p-4 border transition-all duration-300 flex justify-between items-center rounded-none animate-in fade-in slide-in-from-left-2 duration-300 ${selectedInvoiceId === inv.id ? 'border-brand-gold bg-stone-900/40' : 'border-stone-900 hover:border-stone-700'} ${inv.estado === 'ANULADO' ? 'opacity-50 line-through grayscale' : ''}`}
                 >
                   <div className="text-left">
-                    <p className="text-[8px] font-bold tracking-[0.3em] text-stone-600 uppercase mb-0.5">{inv.id}</p>
+                    <p className="text-[8px] font-bold tracking-[0.3em] uppercase mb-0.5 flex gap-2 items-center">
+                      <span className="text-stone-600">{inv.id}</span>
+                      {inv.estado === 'ANULADO' && <span className="text-[7px] text-red-500 tracking-widest bg-red-500/10 px-1 py-0.5">ANULADA</span>}
+                    </p>
                     <p className="text-lg font-bold tracking-tight">MESA {inv.mesa_numero}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] font-bold font-mono text-brand-gold">{formatCOP.format(inv.total_COP)}</p>
+                    <p className={`text-[9px] font-bold font-mono ${inv.estado === 'ANULADO' ? 'text-stone-500' : 'text-brand-gold'}`}>{formatCOP.format(inv.total_COP)}</p>
                     <p className="text-[7px] text-stone-600 font-mono mt-1">{inv.hora}</p>
                   </div>
                 </button>
@@ -249,14 +254,26 @@ export default function BillingView({
                 </button>
               )}
               {selectedInvoice && (
-                <button
-                  type="button"
-                  onClick={() => onPrintInvoice(selectedInvoice)}
-                  className="flex items-center gap-3 px-6 py-3 border border-brand-gold/30 text-brand-gold text-[9px] font-bold tracking-[0.3em] uppercase hover:bg-brand-gold hover:text-brand-bg transition-all rounded-none shrink-0"
-                >
-                  <Printer size={14} />
-                  RE-IMPRIMIR
-                </button>
+                <div className="flex items-center gap-3">
+                  {userRole === 'admin' && selectedInvoice.estado !== 'ANULADO' && onVoidInvoice && !selectedInvoice.id.startsWith('Z-') && (
+                    <button
+                      type="button"
+                      onClick={() => onVoidInvoice(selectedInvoice.id)}
+                      className="flex items-center gap-3 px-6 py-3 border border-red-500/30 text-red-500 text-[9px] font-bold tracking-[0.3em] uppercase hover:bg-red-500 hover:text-white transition-all rounded-none shrink-0"
+                    >
+                      <Trash2 size={14} />
+                      ANULAR
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onPrintInvoice(selectedInvoice)}
+                    className="flex items-center gap-3 px-6 py-3 border border-brand-gold/30 text-brand-gold text-[9px] font-bold tracking-[0.3em] uppercase hover:bg-brand-gold hover:text-brand-bg transition-all rounded-none shrink-0"
+                  >
+                    <Printer size={14} />
+                    RE-IMPRIMIR
+                  </button>
+                </div>
               )}
             </header>
 
