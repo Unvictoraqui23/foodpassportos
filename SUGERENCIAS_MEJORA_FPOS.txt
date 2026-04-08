@@ -1,0 +1,69 @@
+================================================================================
+          SUGERENCIAS DE MEJORA ESTRATÉGICA - FOOD PASSPORT OS (FPOS)
+================================================================================
+
+A continuación se detallan los puntos clave para elevar el sistema POS a un 
+nivel comercial competitivo y mejorar la experiencia de usuario (UX).
+
+--------------------------------------------------------------------------------
+1. CONFIGURACIÓN DINÁMICA (Escalabilidad)
+--------------------------------------------------------------------------------
+* [HECHO] GESTIÓN DE CATEGORÍAS: Permitir crear/editar/eliminar categorías (Entradas, 
+  Bebidas, etc.) desde la configuración, en lugar de que sean fijas.
+* [HECHO] MAPA DE MESAS: Permitir al administrador definir cuántas mesas tiene su salón 
+  desde el panel de control.
+* [HECHO] DATOS DEL NEGOCIO: Campos para NOMBRE del restaurante, NIT/RUT 
+  y dirección para que aparezcan en los recibos impresos.
+
+
+--------------------------------------------------------------------------------
+2. OPERACIÓN DE MESEROS (Intuitividad)
+--------------------------------------------------------------------------------
+* [HECHO] NOTAS EN PEDIDOS: Opción de añadir comentarios por ítem (ej: "Sin cebolla", 
+  "Término medio"). Vital para la comunicación con cocina.
+* [HECHO] INDICADOR DE RED HUMANO: Cambiar "RED: OK" por "Sincronizado / En Línea".
+
+* FEEDBACK VISUAL: Destellos y sonidos sutiles al enviar una comanda para 
+  confirmar al mesero que su acción fue procesada.
+
+--------------------------------------------------------------------------------
+3. FACTURACIÓN Y PAGOS (Ventas)
+--------------------------------------------------------------------------------
+* [HECHO] MÉTODOS DE PAGO: Registrar si el pago fue en Efectivo, Tarjeta o Transferencia. 
+  Indispensable para el cuadre de caja al final del día.
+* DIVISIÓN DE CUENTAS (SPLIT BILL): Herramienta para separar ítems de una mesa 
+  en múltiples facturas parciales. Es la función más pedida en restaurantes.
+* [HECHO] DESCUENTOS Y CORTESÍAS: Botón para aplicar descuentos porcentuales 
+  (con autorización de PIN Admin).
+
+
+--------------------------------------------------------------------------------
+4. INVENTARIO Y STOCK (Gestión)
+--------------------------------------------------------------------------------
+* [HECHO] CONTROL DE DISPONIBILIDAD: Campo de stock en cada producto. Al llegar a cero, 
+  el sistema deshabilita el ítem automáticamente para los meseros.
+* [HECHO] ALERTAS DE NIVEL BAJO: Avisar visualmente al mesero cuando un producto 
+  está por agotarse (Resaltado en Rojo < 5 unidades).
+
+
+--------------------------------------------------------------------------------
+5. INTELIGENCIA DE NEGOCIO (Venta a Dueños)
+--------------------------------------------------------------------------------
+* [HECHO] PLATOS MÁS VENDIDOS: Un ranking de los ítems más populares en el Dashboard.
+* [HECHO] REPORTE DE MÉTODOS DE PAGO: Resumen diario de recaudo por tipo de pago.
+* HORAS PICO: Gráfico que muestre cuándo entra más dinero. [PENDIENTE]
+
+
+--------------------------------------------------------------------------------
+6. ASPECTOS TÉCNICOS Y HARDWARE (Robustez)
+--------------------------------------------------------------------------------
+* [HECHO] OPTIMIZADOR ESC/POS: Plantilla de impresión adaptable para 80mm y A4.
+* [HECHO] EXPORTACIÓN DE DATOS: Botón para bajar el reporte diario en formato CSV y PDF.
+
+* MODO OFFLINE SEGURO: Capacidad de seguir operando localmente si el servidor 
+  principal se apaga momentáneamente (Sincronización Diferida).
+
+================================================================================
+Preparado por: Antigravity AI
+Fecha: 07/04/2026
+================================================================================

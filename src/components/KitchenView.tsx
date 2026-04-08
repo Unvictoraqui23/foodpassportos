@@ -53,11 +53,18 @@ export default function KitchenView({ allOrderItems, onMarkReady }: KitchenViewP
 
                 <div className="space-y-3 flex-1">
                   {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-start">
-                      <div className="flex gap-2">
-                        <span className="text-brand-gold font-bold text-xs">{item.cantidad}x</span>
-                        <span className="text-xs font-medium uppercase tracking-wider text-stone-300">{item.nombre}</span>
+                    <div key={idx} className="flex flex-col gap-1 pb-2 border-b border-stone-800/50 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-start">
+                        <div className="flex gap-2">
+                          <span className="text-brand-gold font-bold text-xs">{item.cantidad}x</span>
+                          <span className="text-xs font-medium uppercase tracking-wider text-stone-300">{item.nombre}</span>
+                        </div>
                       </div>
+                      {item.notes && (
+                        <p className="text-[9px] italic text-brand-gold/80 bg-brand-gold/5 px-2 py-1 uppercase tracking-widest border-l-2 border-brand-gold">
+                          "{item.notes}"
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

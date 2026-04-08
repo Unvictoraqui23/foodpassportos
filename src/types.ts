@@ -17,6 +17,7 @@ export interface MenuItem {
   descripcion: string;
   precio_COP: number;
   categoria: string;
+  stock?: number;
 }
 
 export type OrderItemStatus = 'draft' | 'sent' | 'ready' | 'delivered';
@@ -28,11 +29,12 @@ export interface OrderItem extends MenuItem {
   tableId: string;
   /** Identificador único por línea (ajustes en caja, migración desde datos sin lineId) */
   lineId?: string;
+  notes?: string;
 }
 
 export type OrderStatus = 'pendiente' | 'enviado' | 'completado';
 
-export type AppView = 'mesas' | 'cocina' | 'facturacion' | 'meseros' | 'historial' | 'cierre' | 'inventario' | 'configuracion' | 'reservas';
+export type AppView = 'mesas' | 'cocina' | 'facturacion' | 'meseros' | 'historial' | 'cierre' | 'inventario' | 'configuracion' | 'reservas' | 'dashboard';
 
 export type UserRole = 'admin' | 'mesero';
 
@@ -46,8 +48,11 @@ export interface Invoice {
   tax_COP: number;
   tip_COP: number;
   tip_percentage: number;
+  discount_percentage?: number;
+  discount_COP?: number;
   total_COP: number;
   estado: 'PAGADO' | 'ANULADO';
+  metodoPago?: 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA';
 }
 
 export interface StaffMember {
@@ -75,3 +80,15 @@ export interface Reservation {
   hora: string;
   status: 'pending' | 'completed' | 'cancelled';
 }
+
+export interface AppConfig {
+  restaurantName: string;
+  nit?: string;
+  direccion?: string;
+  ciudad?: string;
+  tableCount: number;
+  taxPercentage: number;
+  currencySymbol: string;
+}
+
+

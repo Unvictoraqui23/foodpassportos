@@ -20,13 +20,25 @@ export default function ZReportView({ historial, onClearHistory }: ZReportViewPr
   const grandTotal = activeInvoices.reduce((acc, inv) => acc + inv.total_COP, 0);
   const transaccionesTotales = activeInvoices.length;
 
+  const totalEfectivo = activeInvoices
+    .filter(inv => inv.metodoPago === 'EFECTIVO' || !inv.metodoPago)
+    .reduce((acc, inv) => acc + inv.total_COP, 0);
+  
+  const totalTarjeta = activeInvoices
+    .filter(inv => inv.metodoPago === 'TARJETA')
+    .reduce((acc, inv) => acc + inv.total_COP, 0);
+  
+  const totalTransferencia = activeInvoices
+    .filter(inv => inv.metodoPago === 'TRANSFERENCIA')
+    .reduce((acc, inv) => acc + inv.total_COP, 0);
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-brand-bg pt-16 md:pt-0 md:pl-24">
       {/* Header */}
       <header className="p-12 border-b border-stone-800 flex justify-between items-end">
         <div>
-          <h1 className="text-[10px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-3">CIERRE DE CAJA</h1>
-          <h2 className="text-4xl font-semibold tracking-tight uppercase tracking-widest">REPORTE Z</h2>
+          <h1 className="text-[10px] font-bold tracking-[0.6em] text-stone-600 uppercase mb-3">SISTEMA DE GESTIÓN</h1>
+          <h2 className="text-4xl font-semibold tracking-tight uppercase tracking-widest">CIERRE DE CAJA</h2>
         </div>
         <div className="text-right">
           <p className="text-[9px] font-bold text-stone-600 tracking-widest uppercase mb-1">FECHA DE CORTE</p>
@@ -63,19 +75,40 @@ export default function ZReportView({ historial, onClearHistory }: ZReportViewPr
 
               <div className="h-[1px] bg-stone-900" />
 
+              {/* Payment Methods Breakdown */}
+              <div className="space-y-6">
+                <p className="text-[9px] font-bold text-brand-gold tracking-[0.4em] uppercase">DESGLOSE DE PAGOS</p>
+                <div className="grid grid-cols-3 gap-8">
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-bold text-stone-600 tracking-widest uppercase">EFECTIVO</p>
+                    <p className="text-lg font-light text-stone-300">{formatCOP.format(totalEfectivo)}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-bold text-stone-600 tracking-widest uppercase">TARJETA</p>
+                    <p className="text-lg font-light text-stone-300">{formatCOP.format(totalTarjeta)}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-bold text-stone-600 tracking-widest uppercase">TRANSFERENCIA</p>
+                    <p className="text-lg font-light text-stone-300">{formatCOP.format(totalTransferencia)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-[1px] bg-stone-900" />
+
               <div className="grid grid-cols-2 gap-12">
                 <div>
                   <p className="text-[9px] font-bold text-stone-600 tracking-[0.3em] uppercase mb-2">IMPUESTO CONSUMO (8%)</p>
                   <p className="text-xl font-light tracking-tight text-stone-300">{formatCOP.format(totalTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold text-stone-600 tracking-[0.3em] uppercase mb-2">PROPINAS RECAUDADAS</p>
+                  <p className="text-[9px] font-bold text-brand-gold tracking-[0.3em] uppercase mb-2">PROPINAS RECAUDADAS</p>
                   <p className="text-xl font-light tracking-tight text-brand-gold">{formatCOP.format(totalTips)}</p>
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-stone-800 flex justify-between items-baseline">
-                <span className="text-[11px] font-bold tracking-[0.5em] text-brand-gold uppercase">GRAN TOTAL</span>
+              <div className="pt-8 border-t border-brand-gold/20 flex justify-between items-baseline">
+                <span className="text-[11px] font-bold tracking-[0.5em] text-brand-gold uppercase">GRAN TOTAL DIA</span>
                 <span className="text-5xl font-bold tracking-tighter text-brand-gold">
                   {formatCOP.format(grandTotal)}
                 </span>

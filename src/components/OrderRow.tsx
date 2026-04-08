@@ -1,12 +1,14 @@
 import React from 'react';
 import { OrderItem } from '../types';
-import { Minus, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { Minus, Plus, Trash2, StickyNote } from 'lucide-react';
 
 interface OrderRowProps {
   item: OrderItem;
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
+  onUpdateNotes?: (id: string, notes: string) => void;
 }
+
 
 const formatCOP = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -14,7 +16,8 @@ const formatCOP = new Intl.NumberFormat('es-CO', {
   minimumFractionDigits: 0,
 });
 
-const OrderRow: React.FC<OrderRowProps> = ({ item, onUpdateQuantity, onRemoveItem }) => {
+const OrderRow: React.FC<OrderRowProps> = ({ item, onUpdateQuantity, onRemoveItem, onUpdateNotes }) => {
+
   const isLocked = item.status === 'sent' || item.status === 'ready';
 
   return (
@@ -37,17 +40,36 @@ const OrderRow: React.FC<OrderRowProps> = ({ item, onUpdateQuantity, onRemoveIte
           <p className="text-[8px] text-stone-600 font-mono tracking-wider">
             {formatCOP.format(item.precio_COP)} / U
           </p>
+          {item.notes && (
+            <p className="text-[8px] italic text-brand-gold/60 mt-1 uppercase tracking-widest bg-brand-gold/5 px-2 py-1 border-l border-brand-gold/30">
+              "{item.notes}"
+            </p>
+          )}
         </div>
+
         
         {!isLocked && (
-          <button 
-            onClick={() => onRemoveItem(item.id)}
-            className="text-stone-800 hover:text-red-500/80 transition-colors p-1"
-          >
-            <Trash2 size={11} />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                const n = prompt('NOTA PARA COCINA:', item.notes || '');
+                if (n !== null) onUpdateNotes?.(item.id, n.toUpperCase());
+              }}
+              className="text-stone-700 hover:text-brand-gold transition-colors p-1"
+              title="Añadir nota"
+            >
+              <StickyNote size={11} />
+            </button>
+            <button 
+              onClick={() => onRemoveItem(item.id)}
+              className="text-stone-800 hover:text-red-500/80 transition-colors p-1"
+            >
+              <Trash2 size={11} />
+            </button>
+          </div>
         )}
       </div>
+
       
       <div className="flex justify-between items-center bg-stone-950/30 p-2 border border-stone-900/50">
         <div className="flex items-center">

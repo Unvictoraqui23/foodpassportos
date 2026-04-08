@@ -1,10 +1,13 @@
 import React from 'react';
-import { Invoice, OrderItem } from '../types';
+import { Invoice, OrderItem, AppConfig } from '../types';
+
 
 interface PrinterTemplateProps {
   data: Invoice | null;
   format: 'A4' | '80mm';
+  appConfig?: AppConfig;
 }
+
 
 const formatCOP = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -12,7 +15,8 @@ const formatCOP = new Intl.NumberFormat('es-CO', {
   minimumFractionDigits: 0,
 });
 
-const PrinterTemplate: React.FC<PrinterTemplateProps> = ({ data, format }) => {
+const PrinterTemplate: React.FC<PrinterTemplateProps> = ({ data, format, appConfig }) => {
+
   if (!data) return null;
 
   const isThermal = format === '80mm';
@@ -37,14 +41,21 @@ const PrinterTemplate: React.FC<PrinterTemplateProps> = ({ data, format }) => {
       `}} />
 
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold uppercase tracking-widest">FOOD PASSPORT OS</h1>
-        <p className="text-[10px] uppercase tracking-widest text-gray-600 mt-1">Gastro-Control Premium</p>
+        <h1 className="text-2xl font-bold uppercase tracking-widest">{appConfig?.restaurantName || 'FOOD PASSPORT OS'}</h1>
+        <p className="text-[9px] uppercase tracking-widest text-gray-800 mt-1">{appConfig?.nit || 'Gastro-Control Premium'}</p>
+        <p className="text-[8px] uppercase tracking-widest text-gray-600 font-mono mt-0.5">
+          {appConfig?.direccion} {appConfig?.ciudad ? `· ${appConfig.ciudad}` : ''}
+        </p>
         <div className="mt-4 border-t border-b border-black py-2">
           <p className="font-bold uppercase text-xs">MESA {data.mesa_numero}</p>
-          <p className="text-[9px]">FACTURA: {data.id} · {data.fecha_ISO}</p>
+          <div className="flex justify-between items-center px-4 mt-1">
+            <p className="text-[9px]">FACTURA: {data.id}</p>
+            <p className="text-[9px]">{data.fecha_ISO}</p>
+          </div>
           <p className="text-[9px]">HORA: {data.hora}</p>
         </div>
       </div>
+
 
       <table className="w-full mb-6 border-collapse">
         <thead>
@@ -82,7 +93,13 @@ const PrinterTemplate: React.FC<PrinterTemplateProps> = ({ data, format }) => {
           <span>TOTAL:</span>
           <span>{formatCOP.format(data.total_COP)}</span>
         </div>
+        {data.metodoPago && (
+          <div className="pt-2 flex justify-end">
+            <p className="text-[8px] font-bold tracking-widest uppercase border border-black px-2 py-0.5">PAGADO CON {data.metodoPago}</p>
+          </div>
+        )}
       </div>
+
 
       <div className="mt-12 text-center">
         <p className="text-[9px] uppercase tracking-[0.3em] font-bold">Gracias por su visita</p>

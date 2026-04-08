@@ -8,7 +8,7 @@
     {
       "id": "2",
       "numero": 2,
-      "estado": "libre"
+      "estado": "disponible"
     },
     {
       "id": "3",
@@ -64,47 +64,22 @@
   "orders": [],
   "history": [
     {
-      "id": "Z-20260401-858",
-      "mesa_numero": 0,
-      "hora": "11:11:03",
-      "fecha_ISO": "2026-04-01",
+      "id": "F-1683",
+      "mesa_numero": 1,
+      "hora": "00:46",
+      "fecha_ISO": "2026-04-08",
       "items": [
         {
-          "id": "z1",
-          "nombre": "REPORTE Z ACUMULADO",
-          "descripcion": "Ventas del día",
-          "precio_COP": 204520,
-          "categoria": "ADMIN",
-          "cantidad": 1,
-          "status": "ready",
-          "tableId": "0",
-          "lineId": "z1"
-        }
-      ],
-      "subtotal_COP": 184000,
-      "tax_COP": 14720,
-      "tip_COP": 5800,
-      "tip_percentage": 0,
-      "total_COP": 204520,
-      "estado": "PAGADO"
-    },
-    {
-      "id": "F-1414",
-      "mesa_numero": 3,
-      "hora": "10:48",
-      "fecha_ISO": "2026-04-01",
-      "items": [
-        {
-          "id": "m1",
-          "nombre": "Carpaccio de Res",
-          "descripcion": "Láminas finas de solomillo, alcaparras, parmesano y aceite de trufa.",
-          "precio_COP": 42000,
+          "id": "m2",
+          "nombre": "Pulpo a la Brasa",
+          "descripcion": "Tentáculo de pulpo, puré de papa criolla y pimentón de la vera.",
+          "precio_COP": 58000,
           "categoria": "Entradas",
-          "cantidad": 5,
+          "cantidad": 2,
           "status": "sent",
-          "tableId": "3",
-          "lineId": "l-1775055858930-4ozth80xk",
-          "comandaId": "#2031"
+          "tableId": "1",
+          "lineId": "l-1775627150294-mk2iuec1p",
+          "comandaId": "#4734"
         },
         {
           "id": "m3",
@@ -112,43 +87,106 @@
           "descripcion": "Arroz arborio, variedad de setas silvestres y aceite de trufa blanca.",
           "precio_COP": 65000,
           "categoria": "Fuertes",
-          "cantidad": 3,
+          "cantidad": 2,
           "status": "sent",
-          "tableId": "3",
-          "lineId": "l-1775055861338-k191gz9am",
-          "comandaId": "#2031"
-        },
-        {
-          "id": "m5",
-          "nombre": "Malbec Reserva",
-          "descripcion": "Copa de vino tinto con notas de frutos rojos y roble.",
-          "precio_COP": 35000,
-          "categoria": "Vinos",
-          "cantidad": 1,
-          "status": "sent",
-          "tableId": "3",
-          "lineId": "l-1775055932515-44jykk062",
-          "comandaId": "#3760"
-        },
-        {
-          "id": "m5",
-          "nombre": "Malbec Reserva",
-          "descripcion": "Copa de vino tinto con notas de frutos rojos y roble.",
-          "precio_COP": 35000,
-          "categoria": "Vinos",
-          "cantidad": 3,
-          "status": "sent",
-          "tableId": "3",
-          "lineId": "l-1775055939227-z8kvbhrsj",
-          "comandaId": "#5140"
+          "tableId": "1",
+          "lineId": "l-1775627152865-i0g7nb5f5",
+          "comandaId": "#4734"
         }
       ],
-      "subtotal_COP": 545000,
-      "tax_COP": 43600,
+      "subtotal_COP": 246000,
+      "tax_COP": 19680,
       "tip_COP": 0,
       "tip_percentage": 0,
-      "total_COP": 588600,
-      "estado": "ANULADO"
+      "total_COP": 265680,
+      "estado": "PAGADO"
+    },
+    {
+      "id": "F-9687",
+      "mesa_numero": 1,
+      "hora": "00:14",
+      "items": [
+        {
+          "id": "m4",
+          "nombre": "Salmón en Costra",
+          "descripcion": "Filete de salmón con costra de pistacho y espárragos trigueros.",
+          "precio_COP": 72000,
+          "categoria": "Fuertes",
+          "cantidad": 1,
+          "status": "ready",
+          "tableId": "1",
+          "lineId": "l-1775625221209-d6mmhji4n",
+          "comandaId": "#8064"
+        },
+        {
+          "id": "m3",
+          "nombre": "Risotto de Hongos",
+          "descripcion": "Arroz arborio, variedad de setas silvestres y aceite de trufa blanca.",
+          "precio_COP": 65000,
+          "categoria": "Fuertes",
+          "cantidad": 1,
+          "status": "ready",
+          "tableId": "1",
+          "lineId": "l-1775625230473-1hsph5318",
+          "comandaId": "#3202"
+        }
+      ],
+      "subtotal_COP": 137000,
+      "tax_COP": 10960,
+      "tip_COP": 0,
+      "tip_percentage": 0,
+      "total_COP": 147960,
+      "estado": "PAGADO"
+    },
+    {
+      "id": "F-2409",
+      "mesa_numero": 1,
+      "hora": "23:57",
+      "fecha_ISO": "2026-04-08",
+      "items": [
+        {
+          "id": "m2",
+          "nombre": "Pulpo a la Brasa",
+          "descripcion": "Tentáculo de pulpo, puré de papa criolla y pimentón de la vera.",
+          "precio_COP": 58000,
+          "categoria": "Entradas",
+          "cantidad": 1,
+          "status": "sent",
+          "tableId": "1",
+          "lineId": "l-1775624197383-bucuztf1u",
+          "comandaId": "#2629"
+        },
+        {
+          "id": "m4",
+          "nombre": "Salmón en Costra",
+          "descripcion": "Filete de salmón con costra de pistacho y espárragos trigueros.",
+          "precio_COP": 72000,
+          "categoria": "Fuertes",
+          "cantidad": 1,
+          "status": "sent",
+          "tableId": "1",
+          "lineId": "l-1775624201008-7nobmh4l8",
+          "comandaId": "#2629"
+        },
+        {
+          "id": "m3",
+          "nombre": "Risotto de Hongos",
+          "descripcion": "Arroz arborio, variedad de setas silvestres y aceite de trufa blanca.",
+          "precio_COP": 65000,
+          "categoria": "Fuertes",
+          "cantidad": 1,
+          "status": "sent",
+          "tableId": "1",
+          "lineId": "l-1775624201887-h7iq17tut",
+          "comandaId": "#2629"
+        }
+      ],
+      "subtotal_COP": 195000,
+      "tax_COP": 15600,
+      "tip_COP": 0,
+      "tip_percentage": 0,
+      "total_COP": 210600,
+      "estado": "PAGADO"
     }
   ],
   "tips": {},
@@ -210,5 +248,20 @@
       "pin": "3333"
     }
   ],
-  "lastUpdate": 1775067527888
+  "adminPin": "1234",
+  "reservations": [],
+  "categories": [
+    "Entradas",
+    "Cafés",
+    "Bebidas",
+    "Fuertes",
+    "Postres"
+  ],
+  "config": {
+    "restaurantName": "FOOD PASSPORT",
+    "tableCount": 12,
+    "taxPercentage": 8,
+    "currencySymbol": "$"
+  },
+  "lastUpdate": 1775650990496
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppView, UserRole } from '../types';
-import { LayoutGrid, Utensils, Receipt, Power, Users, History, Menu, X, Settings, Calendar } from 'lucide-react';
+import { LayoutGrid, Utensils, Receipt, Power, Users, History, Menu, X, Settings, Calendar, BarChart3 } from 'lucide-react';
+
 
 interface SideNavProps {
   currentView: AppView;
@@ -11,11 +12,13 @@ interface SideNavProps {
 }
 
 const NAV_ITEMS: { id: AppView; label: string; meseroLabel?: string; icon: any }[] = [
+  { id: 'dashboard', label: 'DASHBOARD', icon: BarChart3 },
   { id: 'mesas', label: 'MESAS', icon: LayoutGrid },
+
   { id: 'reservas', label: 'RESERVAS', icon: Calendar },
   { id: 'cocina', label: 'COCINA', icon: Utensils },
   { id: 'facturacion', label: 'FACTURACIÓN', meseroLabel: 'CAJA PRINCIPAL', icon: Receipt },
-  { id: 'cierre', label: 'REPORTE Z', icon: Power },
+  { id: 'cierre', label: 'CIERRE DE CAJA', icon: Power },
   { id: 'inventario', label: 'INVENTARIO', icon: Menu },
   { id: 'historial', label: 'HISTORIAL', icon: History },
   { id: 'configuracion', label: 'CONFIGURACIÓN', icon: Settings },

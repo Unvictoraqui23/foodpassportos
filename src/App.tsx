@@ -19,11 +19,13 @@ import BillingView from './components/BillingView';
 import InventoryView from './components/InventoryView';
 import ZReportView from './components/ZReportView';
 import SettingsView from './components/SettingsView';
+import DashboardView from './components/DashboardView';
 import ReservationsView from './components/ReservationsView';
+
 import PrintPreviewModal from './components/PrintPreviewModal';
 import PrinterTemplate from './components/PrinterTemplate';
 import PinAuthModal from './components/PinAuthModal';
-import { AppView, StaffMember, Invoice } from './types';
+import { AppView, StaffMember, Invoice, AppConfig } from './types';
 import { X } from 'lucide-react';
 
 // Mock Data
@@ -99,7 +101,12 @@ export default function App() {
     const saved = localStorage.getItem('pos_menu');
     return saved ? JSON.parse(saved) : MOCK_MENU;
   });
-  const [activeCategory, setActiveCategory] = useState('Entradas');
+  const [activeCategory, setActiveCategory] = useState(() => {
+    const saved = localStorage.getItem('pos_categories');
+    const cats = saved ? JSON.parse(saved) : MENU_CATEGORIES;
+    return cats[0] || 'Entradas';
+  });
+
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [tableTips, setTableTips] = useState<Record<string, number>>(() => {
     const saved = localStorage.getItem('pos_tips');
@@ -110,6 +117,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [isMobileOrderOpen, setIsMobileOrderOpen] = useState(false);
+  const [isClearHistoryAuthOpen, setIsClearHistoryAuthOpen] = useState(false);
   const [printQueue, setPrintQueue] = useState<Invoice | null>(null);
   const [printFormat, setPrintFormat] = useState<'A4' | '80mm'>('A4');
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -122,6 +130,15 @@ export default function App() {
     const saved = localStorage.getItem('pos_reservations');
     return saved ? JSON.parse(saved) : [];
   });
+  const [categories, setCategories] = useState<string[]>(() => {
+    const saved = localStorage.getItem('pos_categories');
+    return saved ? JSON.parse(saved) : MENU_CATEGORIES;
+  });
+  const [appConfig, setAppConfig] = useState<AppConfig>(() => {
+    const saved = localStorage.getItem('pos_config');
+    return saved ? JSON.parse(saved) : { restaurantName: 'FOOD PASSPORT', tableCount: 12, taxPercentage: 8, currencySymbol: '$' };
+  });
+
   // Refs para evitar closures stale en los efectos de sync
   const lastServerUpdateRef = useRef(0);
   const tablesRef = useRef(tables);
@@ -134,6 +151,9 @@ export default function App() {
   const adminPinRef = useRef(adminPin);
   const reservationsRef = useRef(reservations);
   const syncUrlRef = useRef(syncUrl);
+  const categoriesRef = useRef(categories);
+  const appConfigRef = useRef(appConfig);
+
 
   // Mantener refs sincronizados
   React.useEffect(() => { tablesRef.current = tables; }, [tables]);
@@ -146,6 +166,9 @@ export default function App() {
   React.useEffect(() => { adminPinRef.current = adminPin; }, [adminPin]);
   React.useEffect(() => { reservationsRef.current = reservations; }, [reservations]);
   React.useEffect(() => { syncUrlRef.current = syncUrl; }, [syncUrl]);
+  React.useEffect(() => { categoriesRef.current = categories; }, [categories]);
+  React.useEffect(() => { appConfigRef.current = appConfig; }, [appConfig]);
+
   React.useEffect(() => { lastServerUpdateRef.current = lastServerUpdate; }, [lastServerUpdate]);
 
   // Initial Load from Server with Local Fallback
@@ -169,7 +192,10 @@ export default function App() {
           if (data.staff && data.staff.length > 0) setStaff(data.staff);
           if (data.adminPin) setAdminPin(data.adminPin);
           if (data.reservations) setReservations(data.reservations);
+          if (data.categories) setCategories(data.categories);
+          if (data.config) setAppConfig(data.config);
           setLastServerUpdate(data.lastUpdate);
+
         } else {
           console.log('[SYNC] Server is empty. Ready for local data.');
         }
@@ -200,7 +226,10 @@ export default function App() {
           staff: staffRef.current,
           adminPin: adminPinRef.current,
           reservations: reservationsRef.current,
+          categories: categoriesRef.current,
+          config: appConfigRef.current,
           // Enviamos nuestro TS para que el servidor detecte pushes desactualizados
+
           clientLastUpdate: lastServerUpdateRef.current,
         })
       });
@@ -221,7 +250,10 @@ export default function App() {
           if (srv.staff && srv.staff.length > 0) setStaff(srv.staff);
           if (srv.adminPin) setAdminPin(srv.adminPin);
           if (srv.reservations) setReservations(srv.reservations);
+          if (srv.categories) setCategories(srv.categories);
+          if (srv.config) setAppConfig(srv.config);
           setLastServerUpdate(srv.lastUpdate);
+
           setSyncStatus('online');
         }
         return;
@@ -249,6 +281,9 @@ export default function App() {
     localStorage.setItem('pos_staff', JSON.stringify(staff));
     localStorage.setItem('pos_admin_pin', adminPin);
     localStorage.setItem('pos_reservations', JSON.stringify(reservations));
+    localStorage.setItem('pos_categories', JSON.stringify(categories));
+    localStorage.setItem('pos_config', JSON.stringify(appConfig));
+
 
     // Debounce Sync Push (800ms para respuesta más rápida)
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
@@ -257,7 +292,8 @@ export default function App() {
     return () => {
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     };
-  }, [tables, allOrderItems, historial, tableTips, pendingCaja, menuItems, staff, adminPin, reservations, syncUrl, performPush]);
+  }, [tables, allOrderItems, historial, tableTips, pendingCaja, menuItems, staff, adminPin, reservations, categories, appConfig, syncUrl, performPush]);
+
 
   // Polling para recibir actualizaciones — usa ref para lastServerUpdate y evita recrear el intervalo
   React.useEffect(() => {
@@ -279,7 +315,10 @@ export default function App() {
           if (data.menuItems && data.menuItems.length > 0) setMenuItems(data.menuItems);
           if (data.staff && data.staff.length > 0) setStaff(data.staff);
           if (data.adminPin) setAdminPin(data.adminPin);
+          if (data.categories) setCategories(data.categories);
+          if (data.config) setAppConfig(data.config);
           setLastServerUpdate(data.lastUpdate);
+
           setSyncStatus('online');
         } else if (data) {
           setSyncStatus('online');
@@ -290,6 +329,23 @@ export default function App() {
     }, 1500); // Polling más frecuente: 1.5s
     return () => clearInterval(pollId);
   }, []); // Sin dependencias — siempre opera desde refs
+
+  React.useEffect(() => {
+    if (tables.length !== appConfig.tableCount) {
+      setTables(prev => {
+        if (prev.length < appConfig.tableCount) {
+          const fresh = Array.from({ length: appConfig.tableCount - prev.length }, (_, i) => ({
+            id: `${prev.length + i + 1}`,
+            numero: prev.length + i + 1,
+            estado: 'libre' as const,
+          }));
+          return [...prev, ...fresh];
+        } else {
+          return prev.slice(0, appConfig.tableCount);
+        }
+      });
+    }
+  }, [appConfig.tableCount, tables.length]);
 
   const handleLogin = (role: UserRole) => {
     setUserRole(role);
@@ -347,13 +403,25 @@ export default function App() {
   const handleAddItem = (item: MenuItem) => {
     if (!selectedTable) return;
 
+    // Control de Stock
+    if (item.stock !== undefined && item.stock <= 0) {
+      alert(`PRODUCTO "${item.nombre}" AGOTADO`);
+      return;
+    }
+
     setAllOrderItems(prev => {
       const existingDraft = prev.find(i => i.id === item.id && i.status === 'draft' && i.tableId === selectedTable.id);
       if (existingDraft) {
+        // Validar si hay stock para incrementar — si existe el campo stock
+        if (item.stock !== undefined && (existingDraft.cantidad + 1) > item.stock) {
+           alert(`STOCK INSUFICIENTE PARA "${item.nombre}"`);
+           return prev;
+        }
         return prev.map(i => (i.id === item.id && i.status === 'draft' && i.tableId === selectedTable.id) ? { ...i, cantidad: i.cantidad + 1 } : i);
       }
       return [...prev, { ...item, cantidad: 1, status: 'draft', tableId: selectedTable.id, lineId: genLineId() }];
     });
+
 
     if (selectedTable.estado === 'libre') {
       setTables(prev => prev.map(t => t.id === selectedTable.id ? { ...t, estado: 'ocupada' } : t));
@@ -371,18 +439,40 @@ export default function App() {
     }));
   };
 
+  const handleUpdateNotes = (id: string, notes: string) => {
+    setAllOrderItems(prev => prev.map(item => {
+      if ((item.lineId === id || item.id === id) && item.status === 'draft' && item.tableId === selectedTable?.id) {
+        return { ...item, notes };
+      }
+      return item;
+    }));
+  };
+
   const handleRemoveItem = (id: string) => {
+
     setAllOrderItems(prev => prev.filter(item => !(item.id === id && item.status === 'draft' && item.tableId === selectedTable?.id)));
   };
 
   const handleSendOrder = () => {
     if (!selectedTable) return;
-    const comandaId = `#${Math.floor(1000 + Math.random() * 9000)}`;
     const tableId = selectedTable.id;
+    const itemsUpdating = allOrderItems.filter(i => i.status === 'draft' && i.tableId === tableId);
+    
+    // 1. Deducir Stock
+    setMenuItems(prev => prev.map(m => {
+       const ordered = itemsUpdating.find(out => out.id === m.id);
+       if (ordered && m.stock !== undefined) {
+         return { ...m, stock: Math.max(0, m.stock - ordered.cantidad) };
+       }
+       return m;
+    }));
+
+    const comandaId = `#${Math.floor(1000 + Math.random() * 9000)}`;
 
     setAllOrderItems(prev => prev.map(item => 
       (item.status === 'draft' && item.tableId === tableId) ? { ...item, status: 'sent', comandaId } : item
     ));
+
     
     // Auto-marcar en cola de caja para todos los roles al confirmar
     setPendingCaja(prev => ({ ...prev, [tableId]: true }));
@@ -533,7 +623,24 @@ export default function App() {
     }
   };
 
+  const handleManualClearHistory = () => {
+    setIsClearHistoryAuthOpen(true);
+  };
+
+  const performActualClearHistory = () => {
+    setHistorial([]);
+    // Push sync to clear history on all devices
+    setTimeout(() => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+      performPush();
+    }, 50);
+    setIsClearHistoryAuthOpen(false);
+    alert('HISTORIAL ELIMINADO CORRECTAMENTE');
+  };
+
+
   const handleTriggerPrint = (invoice: Invoice) => {
+
     setPrintQueue(invoice);
     setIsPrintModalOpen(true);
   };
@@ -593,7 +700,7 @@ export default function App() {
       hora: new Date().toLocaleTimeString(),
       fecha_ISO: new Date().toISOString().split('T')[0],
       items: [
-        { id: 'z1', nombre: 'REPORTE Z ACUMULADO', descripcion: 'Ventas del día', precio_COP: totalVentas, categoria: 'ADMIN', cantidad: 1, status: 'ready', tableId: '0', lineId: 'z1' }
+        { id: 'z1', nombre: 'CIERRE DE CAJA ACUMULADO', descripcion: 'Ventas del día', precio_COP: totalVentas, categoria: 'ADMIN', cantidad: 1, status: 'ready', tableId: '0', lineId: 'z1' }
       ],
       subtotal_COP: totalSub,
       tax_COP: totalTax,
@@ -700,10 +807,11 @@ export default function App() {
               ) : (
                 <div className="flex flex-col h-full">
                   <MenuCategorySelector 
-                    categories={MENU_CATEGORIES}
+                    categories={categories}
                     activeCategory={activeCategory}
                     onCategoryChange={setActiveCategory}
                   />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8 p-6 lg:p-12">
                     {menuItems.filter(item => item.categoria === activeCategory).map(item => (
                       <MenuItemCard 
@@ -742,7 +850,7 @@ export default function App() {
       case 'cierre':
         return userRole === 'admin' ? <ZReportView historial={historial} onClearHistory={handlePreAuthZReport} /> : null;
       case 'inventario':
-        return userRole === 'admin' ? <InventoryView menuItems={menuItems} setMenuItems={setMenuItems} /> : null;
+        return userRole === 'admin' ? <InventoryView menuItems={menuItems} setMenuItems={setMenuItems} categories={categories} /> : null;
       case 'configuracion':
         return userRole === 'admin' ? (
           <SettingsView 
@@ -750,7 +858,13 @@ export default function App() {
             setAdminPin={setAdminPin} 
             staff={staff} 
             setStaff={setStaff} 
+            categories={categories}
+            setCategories={setCategories}
+            appConfig={appConfig}
+            setAppConfig={setAppConfig}
+            onClearHistory={handleManualClearHistory}
           />
+
         ) : null;
       case 'reservas':
         return (
@@ -762,7 +876,10 @@ export default function App() {
             onRemoveReservation={handleRemoveReservation}
           />
         );
+      case 'dashboard':
+        return userRole === 'admin' ? <DashboardView historial={historial} /> : null;
       default:
+
         return null;
     }
   };
@@ -874,7 +991,7 @@ export default function App() {
           onClose={() => setIsAuthZModalOpen(false)}
           onAuthenticated={handlePrintZReportDirect}
           requiredPin={adminPin}
-          title="AUTORIZAR REPORTE Z"
+          title="AUTORIZAR CIERRE DE CAJA"
         />
 
         <PinAuthModal 
@@ -935,8 +1052,16 @@ export default function App() {
           <PrinterTemplate 
             data={printQueue}
             format={printFormat}
+            appConfig={appConfig}
           />
         </div>
+        <PinAuthModal 
+          isOpen={isClearHistoryAuthOpen}
+          onClose={() => setIsClearHistoryAuthOpen(false)}
+          onAuthenticated={performActualClearHistory}
+          requiredPin={adminPin}
+          title="BORRAR HISTORIAL"
+        />
       </div>
     </AutoLock>
   );

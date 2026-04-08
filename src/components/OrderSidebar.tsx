@@ -16,7 +16,9 @@ interface OrderSidebarProps {
   pendingCaja?: boolean;
   userRole: UserRole;
   onCancelOrder?: (tableId: string) => void;
+  onUpdateNotes?: (id: string, notes: string) => void;
 }
+
 
 const formatCOP = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -37,8 +39,10 @@ export default function OrderSidebar({
   onSendToCashRegister,
   pendingCaja = false,
   userRole,
-  onCancelOrder
+  onCancelOrder,
+  onUpdateNotes
 }: OrderSidebarProps) {
+
   const isMesero = userRole === 'mesero';
 
   const draftItems = orderItems.filter(item => item.status === 'draft');
@@ -148,7 +152,9 @@ export default function OrderSidebar({
                             item={item} 
                             onUpdateQuantity={onUpdateQuantity} 
                             onRemoveItem={onRemoveItem} 
+                            onUpdateNotes={onUpdateNotes}
                           />
+
                         ))}
                       </div>
                     </div>
@@ -172,7 +178,9 @@ export default function OrderSidebar({
                       item={item} 
                       onUpdateQuantity={onUpdateQuantity} 
                       onRemoveItem={onRemoveItem} 
+                      onUpdateNotes={onUpdateNotes}
                     />
+
                   ))}
                 </div>
               </div>

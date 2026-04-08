@@ -19,6 +19,13 @@ const initialState = {
   pendingCaja: {},
   menuItems: [],
   staff: [],
+  categories: ['Entradas', 'Cafés', 'Bebidas', 'Fuertes', 'Postres'],
+  config: {
+    restaurantName: 'FOOD PASSPORT',
+    tableCount: 12,
+    taxPercentage: 8,
+    currencySymbol: '$'
+  },
   lastUpdate: 0
 };
 
